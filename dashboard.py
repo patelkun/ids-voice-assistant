@@ -1,3 +1,4 @@
+from email_alert import send_alert
 import streamlit as st
 import pyttsx3
 import pandas as pd
@@ -60,6 +61,7 @@ if st.button("🔍 Start Network Scan (15 sec)"):
                 ip_counter[src] += 1
                 if ip_counter[src] == 10 and src not in alerted:
                     alerted.add(src)
+                    send_alert(src, "Suspicious IP detected")
                     st.session_state.alerts.append({
                         "IP": src,
                         "Alert": f"Suspicious! {src} ne 10+ packets bheje"
