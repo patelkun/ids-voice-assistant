@@ -6,6 +6,17 @@ from collections import Counter
 import threading
 import time
 
+import pickle
+
+# ML Model load karo
+with open("ids_model.pkl", "rb") as f:
+    ml_model = pickle.load(f)
+
+def predict_attack(packet_count, avg_size, port_443, port_22, udp_ratio):
+    features = [[packet_count, avg_size, port_443, port_22, udp_ratio]]
+    prediction = ml_model.predict(features)[0]
+    return prediction 
+
 st.set_page_config(page_title="IDS Dashboard", page_icon="🛡️", layout="wide")
 
 st.title("🛡️ AI Intrusion Detection System")
@@ -66,6 +77,25 @@ if st.button("🔍 Start Network Scan (15 sec)"):
                         except:
                             pass
                     threading.Thread(target=say_alert, args=(src,)).start()
+                    
+                    # ML prediction — yeh add karo yahan
+                    port_443 = 1 if (TCP in pkt and pkt[TCP].dport == 443) else 0
+                    port_22 = 1 if (TCP in pkt and pkt[TCP].dport == 22) else 0
+                    udp_ratio = 1.0 if UDP in pkt else 0.0
+                    
+                    prediction = predict_attack(
+                        packet_count=ip_counter.get(src, 1),
+                        avg_size=len(pkt),
+                        port_443=port_443,
+                        port_22=port_22,
+                        udp_ratio=udp_ratio
+                    )
+                    
+                    if prediction != "normal":
+                        st.session_state.alerts.append({
+                            "IP": src,
+                            "Alert": f"ML Detection: {prediction} from {src}!"
+                        })
 
     with st.spinner("Scanning network..."):
         sniff(prn=capture, store=False, timeout=15)

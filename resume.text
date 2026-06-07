@@ -1,0 +1,30 @@
+KUNJ PATEL
+AI and Cybersecurity Engineer
+GitHub: github.com/patelkun
+Email: kunjpatel0731@gmail.com
+
+---
+
+SKILLS
+- Python, Machine Learning, Deep Learning
+- Network Security, Cybersecurity
+- Scapy, Whisper, Streamlit, pyttsx3
+- Git, GitHub, VS Code
+
+---
+
+PROJECTS
+
+AI-Powered Intrusion Detection System with Voice Assistant
+- Built real-time network monitoring system using Python and Scapy
+- Implemented voice commands using OpenAI Whisper (speech-to-text)
+- Voice alerts using pyttsx3 (text-to-speech)
+- Live dashboard using Streamlit with attack detection and bar charts
+- Detected suspicious IPs automatically and alerted via voice
+- GitHub: github.com/patelkun/ids-voice-assistant
+Tech: Python, Whisper, Scapy, Streamlit, pyttsx3
+
+---
+
+EDUCATION
+[information technology]

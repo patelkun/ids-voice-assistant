@@ -5,6 +5,8 @@ import csv
 import pyttsx3
 import threading
 
+
+
 MY_IP = "10.229.38.182"  # tumhara laptop IP
 
 def speak(text):
