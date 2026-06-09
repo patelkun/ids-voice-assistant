@@ -1,3 +1,7 @@
+import whisper
+import sounddevice as sd
+import scipy.io.wavfile as wav
+import webbrowser
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -8,6 +12,8 @@ from scapy.all import sniff, IP, TCP, UDP
 from collections import Counter
 import threading
 import pickle
+from database import save_alert, get_all_alerts
+import subprocess
 
 with open("ids_model.pkl", "rb") as f:
     ml_model = pickle.load(f)
@@ -29,15 +35,66 @@ if "alerts" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-col1, col2, col3 = st.columns(3)
+# Threat level calculate karo
+alert_count = len(st.session_state.alerts)
+if alert_count == 0:
+    threat_level = "🟢 LOW"
+    threat_color = "green"
+elif alert_count <= 2:
+    threat_level = "🟡 MEDIUM"
+    threat_color = "orange"
+elif alert_count <= 5:
+    threat_level = "🔴 HIGH"
+    threat_color = "red"
+else:
+    threat_level = "🚨 CRITICAL"
+    threat_color = "darkred"
+
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric("Total Packets", len(st.session_state.packets))
 with col2:
     st.metric("Alerts", len(st.session_state.alerts))
 with col3:
     st.metric("Status", "🟢 Active")
+with col4:
+    st.metric("Threat Level", threat_level)
 
 st.divider()
+st.divider()
+
+st.subheader("🎤 Voice Command")
+col_v1, col_v2 = st.columns([1, 3])
+
+with col_v1:
+    if st.button("🎤 Bolo (5 sec)"):
+        with st.spinner("Sun raha hoon..."):
+            sample_rate = 16000
+            audio = sd.rec(int(5 * sample_rate),
+                          samplerate=sample_rate,
+                          channels=1, dtype='int16')
+            sd.wait()
+            wav.write("dashboard_input.wav", sample_rate, audio)
+            
+            model = whisper.load_model("base")
+            result = model.transcribe("dashboard_input.wav")
+            command = result["text"].strip().lower()
+            
+            st.success(f"Tumne kaha: {command}")
+            
+            if "youtube" in command:
+                st.info("YouTube khul raha hai!")
+                webbrowser.open("https://www.youtube.com")
+            elif "google" in command:
+                st.info("Google khul raha hai!")
+                webbrowser.open("https://www.google.com")
+            elif "check" in command or "scan" in command or "network" in command:
+                st.info("Network scan shuru ho raha hai!")
+            elif "alert" in command:
+                st.info("Alerts dekh rahe hain!")
+            else:
+                st.warning(f"Command samajh nahi aaya: {command}")
+
 
 if st.button("🔍 Start Network Scan (15 sec)"):
     ip_counter = Counter()
@@ -59,7 +116,21 @@ if st.button("🔍 Start Network Scan (15 sec)"):
                 ip_counter[src] += 1
                 if ip_counter[src] == 10 and src not in alerted:
                     alerted.add(src)
+                    save_alert(src, "Suspicious IP")
+
                     send_alert(src, "Suspicious IP detected")
+                    # Auto IP block
+                    try:
+                        block_cmd = f'netsh advfirewall firewall add rule name="IDS_BLOCK_{src}" dir=in action=block remoteip={src}'
+                        subprocess.run(block_cmd, shell=True, capture_output=True)
+                        st.session_state.alerts.append({
+                            "IP": src,
+                            "Alert": f"🚫 IP {src} automatically blocked!"
+                        })
+                        print(f"Blocked: {src}")
+                    except Exception as e:
+                        print(f"Block error: {e}")
+                        
                     st.session_state.alerts.append({
                         "IP": src,
                         "Alert": f"Suspicious! {src} ne 10+ packets bheje"
@@ -116,6 +187,18 @@ if st.session_state.packets:
     st.bar_chart(ip_counts)
 
 st.divider()
+st.divider()
+st.subheader("📜 Attack History — All Time")
+all_alerts = get_all_alerts()
+if all_alerts:
+    history_data = [{
+        "IP": a.ip,
+        "Attack": a.attack_type,
+        "Time": a.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    } for a in all_alerts]
+    st.dataframe(pd.DataFrame(history_data), use_container_width=True)
+else:
+    st.info("Abhi koi history nahi hai.")
 
 if st.button("🗑️ Clear Data"):
     st.session_state.packets = []
