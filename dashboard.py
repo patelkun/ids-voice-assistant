@@ -23,6 +23,51 @@ def predict_attack(packet_count, avg_size, port_443, port_22, udp_ratio):
     return ml_model.predict(features)[0]
 
 st.set_page_config(page_title="IDS Dashboard", page_icon="🛡️", layout="wide")
+st.markdown("""
+<style>
+    /* Dark mode */
+    .stApp {
+        background-color: #0e1117;
+        color: #ffffff;
+    }
+    .stMetric {
+        background-color: #1e2130;
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #2d3250;
+    }
+    .stDataFrame {
+        background-color: #1e2130;
+    }
+    .stButton button {
+        background-color: #2d3250;
+        color: white;
+        border: 1px solid #4a5080;
+        border-radius: 8px;
+    }
+    .stButton button:hover {
+        background-color: #4a5080;
+        border-color: #6a70a0;
+    }
+    h1, h2, h3 {
+        color: #00ff88 !important;
+    }
+    .stAlert {
+        background-color: #1e2130;
+    }
+    /* Sidebar */
+    .css-1d391kg {
+        background-color: #1e2130;
+    }
+    /* Chat */
+    .stChatMessage {
+        background-color: #1e2130;
+        border-radius: 10px;
+        border: 1px solid #2d3250;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🛡️ AI Intrusion Detection System")
 st.subheader("Real-time Network Monitor — Kunj Patel")
 
