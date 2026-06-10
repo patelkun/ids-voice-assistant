@@ -1,3 +1,4 @@
+from dl_predict import dl_predict
 from honeypot import start_honeypot
 import json
 from geopy.distance import geodesic
@@ -241,19 +242,36 @@ if st.button("🔍 Start Network Scan (15 sec)"):
                     port_443 = 1 if (TCP in pkt and pkt[TCP].dport == 443) else 0
                     port_22 = 1 if (TCP in pkt and pkt[TCP].dport == 22) else 0
                     udp_ratio = 1.0 if UDP in pkt else 0.0
+                    # Old ML prediction
                     prediction = predict_attack(
+                      packet_count=ip_counter.get(src, 1),
+                      avg_size=len(pkt),
+                      port_443=port_443,
+                      port_22=port_22,
+                      udp_ratio=udp_ratio
+                    )
+                    if prediction != "normal":
+                       st.session_state.alerts.append({
+                          "IP": src,
+                          "Alert": f"ML Detection: {prediction} from {src}!"
+                            })
+
+                     # Deep Learning prediction
+                    dl_attack, confidence = dl_predict(
                         packet_count=ip_counter.get(src, 1),
                         avg_size=len(pkt),
                         port_443=port_443,
                         port_22=port_22,
-                        udp_ratio=udp_ratio
+                        port_80=0,
+                        udp_ratio=udp_ratio,
+                        inter_arrival=0.1,
+                        burst_size=ip_counter.get(src, 1)
                     )
-                    if prediction != "normal":
+                    if dl_attack != "normal":
                         st.session_state.alerts.append({
-                            "IP": src,
-                            "Alert": f"ML Detection: {prediction} from {src}!"
-                        })
-
+                        "IP": src,
+                        "Alert": f"🧠 Deep Learning: {dl_attack} ({confidence:.1f}% confidence) from {src}!"
+                   })
     with st.spinner("Scanning network..."):
         sniff(prn=capture, store=False, timeout=15)
 
