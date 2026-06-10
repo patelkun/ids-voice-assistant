@@ -1,3 +1,9 @@
+from honeypot import start_honeypot
+import json
+from geopy.distance import geodesic
+import requests
+import folium
+from streamlit_folium import st_folium
 import whisper
 import sounddevice as sd
 import scipy.io.wavfile as wav
@@ -23,6 +29,25 @@ def predict_attack(packet_count, avg_size, port_443, port_22, udp_ratio):
     return ml_model.predict(features)[0]
 
 st.set_page_config(page_title="IDS Dashboard", page_icon="🛡️", layout="wide")
+# Login system
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.title("🔐 IDS Dashboard Login")
+    st.subheader("Sirf authorized user access kar sakta hai")
+    
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    
+    if st.button("Login"):
+        if username == "kunj" and password == "ids@2024":
+            st.session_state.logged_in = True
+            st.success("Login successful!")
+            st.rerun()
+        else:
+            st.error("Wrong username or password!")
+    st.stop()
 st.markdown("""
 <style>
     /* Dark mode */
@@ -107,6 +132,26 @@ with col4:
 
 st.divider()
 st.divider()
+st.subheader("🍯 Honeypot System")
+col_h1, col_h2 = st.columns(2)
+
+with col_h1:
+    if st.button("🍯 Start Honeypot"):
+        if "honeypot_running" not in st.session_state:
+            start_honeypot()
+            st.session_state.honeypot_running = True
+            st.success("Honeypot active! Ports: SSH-2222, HTTP-8080, FTP-2121")
+
+with col_h2:
+    # Honeypot logs dikhao
+    try:
+        with open("honeypot_logs.json", "r") as f:
+            logs = json.load(f)
+        if logs:
+            st.warning(f"⚠️ {len(logs)} honeypot hits detected!")
+            st.dataframe(pd.DataFrame(logs), use_container_width=True)
+    except:
+        st.info("Koi honeypot logs nahi hain abhi.")
 
 st.subheader("🎤 Voice Command")
 col_v1, col_v2 = st.columns([1, 3])
@@ -232,7 +277,64 @@ if st.session_state.packets:
     st.bar_chart(ip_counts)
 
 st.divider()
-st.divider()
+st.subheader("🗺️ Suspicious IP Geo Location Map")
+
+if st.session_state.alerts:
+    m = folium.Map(location=[20, 0], zoom_start=2)
+    
+    located_ips = set()
+    
+    for alert in st.session_state.alerts:
+        ip = alert.get("IP", "")
+        if ip and ip not in located_ips:
+            try:
+                response = requests.get(f"http://ip-api.com/json/{ip}", timeout=3)
+                data = response.json()
+                
+                if data["status"] == "success":
+                    lat = data["lat"]
+                    lon = data["lon"]
+                    country = data["country"]
+                    city = data["city"]
+                    
+                    # Tumhari location — Ahmedabad
+                    my_location = (23.0225, 72.5714)
+                    attack_location = (lat, lon)
+                    distance = round(geodesic(my_location, attack_location).km, 2)
+
+                    # Tumhari location blue marker
+                    folium.Marker(
+                        location=[23.0225, 72.5714],
+                        popup="📍 Tumhari Location — Ahmedabad",
+                        tooltip="Aap yahan hain",
+                        icon=folium.Icon(color="blue", icon="home")
+                    ).add_to(m)
+
+                    # Line — tumse attack tak
+                    folium.PolyLine(
+                        locations=[my_location, attack_location],
+                        color="red",
+                        weight=2,
+                        opacity=0.8,
+                        tooltip=f"Distance: {distance} km"
+                    ).add_to(m)
+
+                    # Attack red marker
+                    folium.Marker(
+                        location=[lat, lon],
+                        popup=f"🚨 {ip}\n{city}, {country}\nDistance: {distance} km door",
+                        tooltip=f"{ip} — {distance} km door",
+                        icon=folium.Icon(color="red", icon="exclamation-sign")
+                    ).add_to(m)
+                    
+                    located_ips.add(ip)
+            except:
+                pass
+    
+    st_folium(m, width=1400, height=450, returned_objects=[])
+else:
+    st.info("Pehle network scan karo — phir map pe IPs dikhenge!")
+
 st.subheader("📜 Attack History — All Time")
 all_alerts = get_all_alerts()
 if all_alerts:

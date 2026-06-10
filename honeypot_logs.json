@@ -1,0 +1,8 @@
+[
+  {
+    "time": "2026-06-10 13:10:36",
+    "ip": "127.0.0.1",
+    "port": 8080,
+    "data": "GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.8457\r\nHost: localhost:8080\r\nConnection: Keep-Alive\r\n\r\n"
+  }
+]
