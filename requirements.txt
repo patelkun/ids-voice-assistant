@@ -1,13 +1,7 @@
 streamlit
-scapy
 pandas
 numpy
 scikit-learn
-pyttsx3
-SpeechRecognition
-openai-whisper
-sounddevice
-scipy
 requests
 folium
 streamlit-folium
@@ -16,7 +10,4 @@ python-dotenv
 groq
 sqlalchemy
 shap
-stable-baselines3
-gymnasium
-tensorflow
-keras
+plotly
