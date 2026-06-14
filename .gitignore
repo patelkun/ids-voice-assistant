@@ -1,0 +1,12 @@
+.env
+idspassword.env
+*.wav
+*.pkl
+*.keras
+*.zip
+__pycache__/
+venv/
+rl_logs/
+gan_generated_attacks.csv
+honeypot_logs.json
+ids_history.db
