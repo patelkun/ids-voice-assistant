@@ -207,6 +207,18 @@ if st.button("🔍 Start Network Scan (15 sec)"):
                 ip_counter[src] += 1
                 if ip_counter[src] == 10 and src not in alerted:
                     alerted.add(src)
+
+                    # Threat Intelligence check
+                    try:
+                        threat = check_ip_threat(src)
+                        if threat["is_malicious"]:
+                            st.session_state.alerts.append({
+                                "IP": src,
+                                "Alert": f"🌍 Threat Intel: {threat['threat_type']} | Score: {threat['abuse_score']}/100 | Country: {threat['country']} | ISP: {threat['isp']}"
+                            })
+                    except:
+                        pass
+
                     save_alert(src, "Suspicious IP")
 
                     send_alert(src, "Suspicious IP detected")
