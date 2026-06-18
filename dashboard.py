@@ -51,52 +51,200 @@ if not st.session_state.logged_in:
     st.stop()
 st.markdown("""
 <style>
-    /* Dark mode */
-    .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    .stMetric {
-        background-color: #1e2130;
-        border-radius: 10px;
-        padding: 10px;
-        border: 1px solid #2d3250;
-    }
-    .stDataFrame {
-        background-color: #1e2130;
-    }
-    .stButton button {
-        background-color: #2d3250;
-        color: white;
-        border: 1px solid #4a5080;
-        border-radius: 8px;
-    }
-    .stButton button:hover {
-        background-color: #4a5080;
-        border-color: #6a70a0;
-    }
-    h1, h2, h3 {
-        color: #00ff88 !important;
-    }
-    .stAlert {
-        background-color: #1e2130;
-    }
-    /* Sidebar */
-    .css-1d391kg {
-        background-color: #1e2130;
-    }
-    /* Chat */
-    .stChatMessage {
-        background-color: #1e2130;
-        border-radius: 10px;
-        border: 1px solid #2d3250;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #070b12;
+  --surface: #0d1520;
+  --border: #1a2a3a;
+  --accent: #00e5ff;
+  --danger: #ff3b5c;
+  --warn: #ffaa00;
+  --safe: #00e676;
+  --text: #c8d8e8;
+  --dim: #4a6278;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+.stApp {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: var(--sans) !important;
+}
+
+/* Grid lines background */
+.stApp::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Headings */
+h1, h2, h3 { 
+  color: var(--accent) !important;
+  font-family: var(--mono) !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+/* Metric cards */
+[data-testid="metric-container"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 18px !important;
+  border-top: 2px solid var(--accent) !important;
+}
+
+[data-testid="stMetricValue"] {
+  font-family: var(--mono) !important;
+  color: var(--accent) !important;
+  font-size: 28px !important;
+}
+
+[data-testid="stMetricLabel"] {
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--dim) !important;
+}
+
+/* Buttons */
+.stButton button {
+  background: transparent !important;
+  border: 1px solid var(--accent) !important;
+  color: var(--accent) !important;
+  font-family: var(--mono) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+}
+
+.stButton button:hover {
+  background: rgba(0,229,255,0.08) !important;
+  box-shadow: 0 0 16px rgba(0,229,255,0.2) !important;
+}
+
+/* Dataframe */
+.stDataFrame {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+/* Alerts */
+.stSuccess {
+  background: rgba(0,230,118,0.08) !important;
+  border: 1px solid rgba(0,230,118,0.25) !important;
+  border-radius: 8px !important;
+  color: var(--safe) !important;
+}
+
+.stWarning {
+  background: rgba(255,170,0,0.08) !important;
+  border: 1px solid rgba(255,170,0,0.25) !important;
+  border-radius: 8px !important;
+  color: var(--warn) !important;
+}
+
+.stError {
+  background: rgba(255,59,92,0.08) !important;
+  border: 1px solid rgba(255,59,92,0.25) !important;
+  border-radius: 8px !important;
+  color: var(--danger) !important;
+}
+
+/* Divider */
+hr {
+  border-color: var(--border) !important;
+}
+
+/* Chat */
+.stChatMessage {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+
+/* Text input */
+.stTextInput input, .stChatInputContainer {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  font-family: var(--mono) !important;
+}
+
+/* Spinner */
+.stSpinner { color: var(--accent) !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0,230,118,0.08);
+  border: 1px solid rgba(0,230,118,0.25);
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--safe);
+  letter-spacing: 0.08em;
+}
+
+.pulse-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--safe);
+  display: inline-block;
+  animation: blink 1.4s step-start infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.title("🛡️ AI Intrusion Detection System")
 st.subheader("Real-time Network Monitor — Kunj Patel")
-
+st.markdown("""
+<div style="display:flex;align-items:center;justify-content:space-between;
+margin-bottom:20px;padding:12px 16px;background:#0d1520;
+border:1px solid #1a2a3a;border-radius:10px">
+  <div style="display:flex;align-items:center;gap:16px">
+    <span class="status-badge">
+      <span class="pulse-dot"></span>SYSTEM ONLINE
+    </span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;
+    color:#4a6278;letter-spacing:0.08em">IDS v2.0 · AI-Powered · Kunj Patel</span>
+  </div>
+  <div style="display:flex;gap:20px">
+    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#00e5ff">🛡 Models: 4 Active</span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#00e676">🍯 Honeypot: Online</span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ffaa00">⚡ XAI: Enabled</span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff3b5c">🧠 DL: 99.2%</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 MY_IP = "10.229.38.182"
 
 if "packets" not in st.session_state:
